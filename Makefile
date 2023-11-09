@@ -1,8 +1,15 @@
 # Run!
 filename := caesar_cipher
 
+# binary generated needs two argument
+# data: string to be shifted
+# shifter: move count from its original number
+# Ex: caesar_cipher('a', 1) = 'b'
+# 'a' = 65 in ASCII
+# 'b' = 66 in ASCII
+
 start: $(filename)
-	target/$(filename)
+	target/$(filename) $(data) $(shifter)
 
 # Create binary file
 caesar_cipher: $(filename).o
