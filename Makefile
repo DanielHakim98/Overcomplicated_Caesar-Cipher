@@ -9,7 +9,7 @@ filename := caesar_cipher
 # 'b' = 66 in ASCII
 
 start: $(filename)
-	target/$(filename) $(data) $(shifter)
+	target/$(filename) '$(data)' $(shifter)
 
 # Create binary file
 $(filename): $(filename).o
