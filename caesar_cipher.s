@@ -71,7 +71,19 @@ not_number:
     syscall
 
 exit_loop:
-    movq %rsi, %rdi
+    # Add end of sequence (LF)
+    movb $10, (%rbx, %rsi, 1)  # Add newline char
+    incq %rsi # rsi 7
+    movb $0, (%rbx, %rsi, 1)   # Append back \0
+
+    movq $SYS_WRITE, %rax
+    movq $STDOUT, %rdi
+    movq %rsi, %rdx
+    movq %rbx, %rsi
+    syscall
+
+exit:
+    movq $0, %rdi
     movq $SYS_EXIT, %rax
     syscall
 
