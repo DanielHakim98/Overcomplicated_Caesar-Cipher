@@ -13,7 +13,7 @@
 
 ERR_NOT_NUM:
     .string "Shifter is not a number\n"
-END_ERR_NOT_NUM: 
+END_ERR_NOT_NUM:
     LEN_ERR_NOT_NUM = . - ERR_NOT_NUM
 
 .section .text
@@ -33,7 +33,7 @@ collect_args:
 check_shifter:
     movq $0, %rsi
     movb (%rdx, %rsi, 1), %dl           # Dereference the pointer in RDX
- 
+
     cmpq $ZERO_ASCII, %rdx      # Compare the value if 0 ASCII
     jl not_number               # If it's less than 0, jump to not_a_number
     cmpq $NINE_ASCII, %rdx      # Compare the value with 9 ASCII
@@ -45,7 +45,7 @@ start_loop:
 
     # Fetch Element #1 into rax
     movb (%rbx, %rsi, 1), %dl
-    
+
     # If element #1 equals 0, then exit loop
     cmpb $0, %dl
     je exit_loop
@@ -56,7 +56,7 @@ continue_loop:
 
     # Fetch nth Element into rax
     movb (%rbx, %rsi, 1), %dl
-    
+
     # If nth Element equals 0 (null terminated), then exit loop
     cmpb $0, %dl
     je exit_loop
@@ -74,8 +74,7 @@ not_number:
 exit_loop:
     movq %rsi, %rdi
     movq $SYS_EXIT, %rax
-    syscall 
-
+    syscall
 
 
 

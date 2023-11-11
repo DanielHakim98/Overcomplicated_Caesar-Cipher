@@ -16,7 +16,7 @@ $(filename): $(filename).o
 	ld target/$(filename).o -o target/$(filename)
 
 # Create object file
-caesar_cipher.o: 
+caesar_cipher.o:
 	mkdir -p target/
 	as $(filename).s -o target/$(filename).o
 
