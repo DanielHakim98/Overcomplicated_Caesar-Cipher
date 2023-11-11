@@ -9,17 +9,17 @@ filename := caesar_cipher
 # 'b' = 66 in ASCII
 
 start: $(filename)
-	target/$(filename) '$(data)' $(shifter)
+	@target/$(filename) '$(data)' $(shifter)
 
 # Create binary file
 $(filename): $(filename).o
-	ld target/$(filename).o -o target/$(filename)
+	@ld target/$(filename).o -o target/$(filename)
 
 # Create object file
 caesar_cipher.o:
-	mkdir -p target/
-	as $(filename).s -o target/$(filename).o
+	@mkdir -p target/
+	@as $(filename).s -o target/$(filename).o
 
 # This one to clean up build files
 clean:
-	rm target/$(filename).o target/$(filename)
+	@rm target/$(filename).o target/$(filename)
