@@ -31,8 +31,7 @@ collect_args:
     movq ARG_2(%rbp), %rdx
 
 check_shifter:
-    movq $0, %rsi
-    movb (%rdx, %rsi, 1), %dl           # Dereference the pointer in RDX
+    movzbq (%rdx), %rdx        # Dereference the pointer in RDX and zero-extend it
 
     cmpq $ZERO_ASCII, %rdx      # Compare the value if 0 ASCII
     jl not_number               # If it's less than 0, jump to not_a_number
