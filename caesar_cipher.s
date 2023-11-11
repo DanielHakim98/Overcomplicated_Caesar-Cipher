@@ -24,7 +24,7 @@ collect_args:
 # As the data passed as pointers,
 # this process is to dereferences them
 # to get the value passed in
-derefernce_pointer:
+dereference_pointer:
     movq (%rbx), %rbx
     movq (%rdx), %rdx
 
