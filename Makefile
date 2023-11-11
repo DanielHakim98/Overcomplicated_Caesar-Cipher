@@ -12,7 +12,7 @@ start: $(filename)
 	target/$(filename) $(data) $(shifter)
 
 # Create binary file
-caesar_cipher: $(filename).o
+$(filename): $(filename).o
 	ld target/$(filename).o -o target/$(filename)
 
 # Create object file
