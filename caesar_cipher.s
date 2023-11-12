@@ -177,10 +177,13 @@ get_decimal_value:
     ret
 
 shift_character: # *[]char %rbx, index %rsi, shifter %rcx
-    # prologue
+# prologue
+prologue:
     pushq %rbp
     movq %rsp, %rbp
+    subq $8, %rsp      # allocate a local variable
 
+body:
     movq 16(%rbp), %rbx # First argument: *[]char
     movq 24(%rbp), %rsi # Second argument: index
     movq 32(%rbp), %rcx # Third argument: shifter
@@ -189,10 +192,13 @@ shift_character: # *[]char %rbx, index %rsi, shifter %rcx
     movb (%rbx, %rsi, 1), %dl
     # add shifter to nth element
     addq %rcx, %rdx
+
+epilogue:
     # store back nth element into *[]char
     movb %dl, (%rbx, %rsi, 1)
 
     # epilogue
+    addq $8, %rsp       # deallocate a local variable
     movq %rbp, %rsp
     popq %rbp
     ret
