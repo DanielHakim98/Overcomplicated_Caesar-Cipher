@@ -51,12 +51,16 @@ collect_args:
     movq ARG_2(%rbp), %rdx
 
 check_shifter:
-    movzbq (%rdx), %rcx         # Dereference the pointer in RDX and zero-extend it in RCX
-
-    cmpq $ZERO_ASCII, %rcx      # Compare the value if 0 ASCII
-    jl not_number               # If it's less than 0, jump to not_a_number
-    cmpq $NINE_ASCII, %rcx      # Compare the value with 9 ASCII
-    jg not_number               # If it's greater than 57, jump to not_a_number
+    # Dereference pointer into ascii decimal and then zero extend it
+    movzbq (%rdx), %rcx
+    # Compare the value if 0 ASCII
+    cmpq $ZERO_ASCII, %rcx
+    # If it's less than 0, jump to not_a_number
+    jl not_number
+    # Compare the value with 9 ASCII
+    cmpq $NINE_ASCII, %rcx
+    # If it's greater than 57, jump to not_a_number
+    jg not_number
 
 start_loop:
     # Load index 0
@@ -69,12 +73,22 @@ start_loop:
     cmpb $0, %dl
     je exit_loop
 
-    # Convert ascii to decimal
-    subq $ZERO_ASCII, %rcx
+    # FUNCTION: Get decimal value from rcx (if 48, then 0, if 49, then 1)
+    pushq %rcx
+    call get_decimal_value
+    popq %rcx
+    movq %rax, %rcx
+    # ======= #
 
-    # Add shifter to original
-    addq %rcx, %rdx
-    movb %dl, (%rbx, %rsi, 1)
+    # FUNCTION: Add shifter to original
+    pushq %rcx
+    pushq %rsi
+    pushq %rbx
+    call shift_character
+    popq %rbx
+    popq %rsi
+    popq %rcx
+    # ======= #
 
 continue_loop:
     # Increment index by 1
@@ -87,9 +101,15 @@ continue_loop:
     cmpb $0, %dl
     je exit_loop
 
-    # Add shifter to original
-    addq %rcx, %rdx
-    movb %dl, (%rbx, %rsi, 1)
+    # FUNCTION: Add shifter to original
+    pushq %rcx
+    pushq %rsi
+    pushq %rbx
+    call shift_character
+    popq %rbx
+    popq %rsi
+    popq %rcx
+    # ======= #
 
     # loop again!!
     jmp continue_loop
@@ -127,20 +147,39 @@ exit:
     movq $SYS_EXIT, %rax
     syscall
 
+get_decimal_value:
+    # prologue
+    pushq %rbp
+    movq %rsp, %rbp
+
+    movq 16(%rbp), %rax
+    subq $ZERO_ASCII, %rax
+
+    # epilogue
+    movq %rbp, %rsp
+    popq %rbp
+    ret
+
+shift_character: # *[]char %rbx, index %rsi, shifter %rcx
+    # prologue
+    pushq %rbp
+    movq %rsp, %rbp
+
+    movq 16(%rbp), %rbx # First argument: *[]char
+    movq 24(%rbp), %rsi # Second argument: index
+    movq 32(%rbp), %rcx # Third argument: shifter
+
+    # Fetch nth element into rax
+    movb (%rbx, %rsi, 1), %dl
+    # add shifter to nth element
+    addq %rcx, %rdx
+    # store back nth element into *[]char
+    movb %dl, (%rbx, %rsi, 1)
+
+    # epilogue
+    movq %rbp, %rsp
+    popq %rbp
+    ret
 
 
-
-
-
-
-# convert ascii representation to decimal
-# for example 1 is 49 in ASCII, and 0 is 48 is ASCII
-# so 49-48 = 1
-# result will be loaded into registers
-ascii_to_dec:
-    subq $ZERO_ASCII, %rdx
-
-# shifting data by second argument 'shifter'
-shifting:
-    addq %rbx, %rdx
 
