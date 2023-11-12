@@ -33,7 +33,7 @@ END_ERR_NOT_NUM:
     LEN_ERR_NOT_NUM = . - ERR_NOT_NUM
 
 
-# Buffer sizse
+# Buffer size
 .equ BUFFER_SIZE, 1024
 .lcomm BUFFER_DATA, BUFFER_SIZE
 
