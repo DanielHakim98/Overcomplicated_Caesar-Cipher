@@ -76,6 +76,9 @@ not_number:
     movq $ERR_NOT_NUM, %rsi
     movq $LEN_ERR_NOT_NUM, %rdx
     syscall
+    # Exit status
+    movq $1, %rsi
+    jmp exit
 
 exit_loop:
     # Add end of sequence (LF)
@@ -91,9 +94,11 @@ display:
     movq %rsi, %rdx
     movq %rbx, %rsi
     syscall
+    # Exit status
+    movq $0, %rsi
 
 exit:
-    movq $0, %rdi
+    movq %rsi, %rdi
     movq $SYS_EXIT, %rax
     syscall
 
