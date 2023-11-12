@@ -18,10 +18,23 @@
 .equ NULL_TERMINATE_ASCII, 0
 .equ END_LINE_ASCII, 10
 
+
+# ASCII Characters boundary
+.equ LOWERCASE_A, 'a'
+.equ LOWERCASE_Z, 'z'
+.equ UPPERCASE_A, 'A'
+.equ UPPERCASE_Z, 'Z
+
+# string for displaying error
 ERR_NOT_NUM:
     .string "Shifter is not a number\n"
 END_ERR_NOT_NUM:
     LEN_ERR_NOT_NUM = . - ERR_NOT_NUM
+
+
+# Buffer sizse
+.equ BUFFER_SIZE, 1024
+.lcomm BUFFER_DATA, BUFFER_SIZE
 
 .section .text
 .globl _start
@@ -38,11 +51,11 @@ collect_args:
     movq ARG_2(%rbp), %rdx
 
 check_shifter:
-    movzbq (%rdx), %rdx         # Dereference the pointer in RDX and zero-extend it
+    movzbq (%rdx), %rcx         # Dereference the pointer in RDX and zero-extend it in RCX
 
-    cmpq $ZERO_ASCII, %rdx      # Compare the value if 0 ASCII
+    cmpq $ZERO_ASCII, %rcx      # Compare the value if 0 ASCII
     jl not_number               # If it's less than 0, jump to not_a_number
-    cmpq $NINE_ASCII, %rdx      # Compare the value with 9 ASCII
+    cmpq $NINE_ASCII, %rcx      # Compare the value with 9 ASCII
     jg not_number               # If it's greater than 57, jump to not_a_number
 
 start_loop:
@@ -56,6 +69,13 @@ start_loop:
     cmpb $0, %dl
     je exit_loop
 
+    # Convert ascii to decimal
+    subq $ZERO_ASCII, %rcx
+
+    # Add shifter to original
+    addq %rcx, %rdx
+    movb %dl, (%rbx, %rsi, 1)
+
 continue_loop:
     # Increment index by 1
     incq %rsi
@@ -67,10 +87,15 @@ continue_loop:
     cmpb $0, %dl
     je exit_loop
 
+    # Add shifter to original
+    addq %rcx, %rdx
+    movb %dl, (%rbx, %rsi, 1)
+
     # loop again!!
     jmp continue_loop
 
 not_number:
+    # Write *[]char to stdout
     movq $SYS_WRITE, %rax
     movq $STDOUT, %rdi
     movq $ERR_NOT_NUM, %rsi
@@ -113,7 +138,6 @@ exit:
 # so 49-48 = 1
 # result will be loaded into registers
 ascii_to_dec:
-    subq $ZERO_ASCII, %rbx
     subq $ZERO_ASCII, %rdx
 
 # shifting data by second argument 'shifter'
