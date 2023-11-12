@@ -227,6 +227,9 @@ less_than_lower_a_or_more_than_upper_z:
     # check old value before shifted if it's less than Z or more
     pushq %rdx
     movq -8(%rbp), %rdx
+    # This command below won't trigger jump is less (jle)
+    # not sure why. I'm curious why...
+    # cmpq $UPPERCASE_Z, %rdx
     cmpb $UPPERCASE_Z, %dl
     popq %rdx
     jle fix_wrapping_more_than_upper_z  # Jump if less than or equal to UPPERCASE_Z
