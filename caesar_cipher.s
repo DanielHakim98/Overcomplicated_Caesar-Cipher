@@ -1,15 +1,22 @@
 .section .data
+# Syscall code
 .equ SYS_EXIT, 60
 .equ SYS_WRITE, 1
 
+# Standard file descriptors
 .equ STDOUT, 1
 
+# For CLI arguments
 .equ ARG_NUM, 0
 .equ ARG_0, 8
 .equ ARG_1, 16
 .equ ARG_2, 24
+
+# ASCII to decimal
 .equ ZERO_ASCII, 48
 .equ NINE_ASCII, 57
+.equ NULL_TERMINATE_ASCII, 0
+.equ END_LINE_ASCII, 10
 
 ERR_NOT_NUM:
     .string "Shifter is not a number\n"
@@ -31,7 +38,7 @@ collect_args:
     movq ARG_2(%rbp), %rdx
 
 check_shifter:
-    movzbq (%rdx), %rdx        # Dereference the pointer in RDX and zero-extend it
+    movzbq (%rdx), %rdx         # Dereference the pointer in RDX and zero-extend it
 
     cmpq $ZERO_ASCII, %rdx      # Compare the value if 0 ASCII
     jl not_number               # If it's less than 0, jump to not_a_number
@@ -42,10 +49,10 @@ start_loop:
     # Load index 0
     movq $0, %rsi
 
-    # Fetch Element #1 into rax
+    # Fetch 1st element into rax
     movb (%rbx, %rsi, 1), %dl
 
-    # If element #1 equals 0, then exit loop
+    # If 1st element equals 0, then exit loop
     cmpb $0, %dl
     je exit_loop
 
@@ -53,10 +60,10 @@ continue_loop:
     # Increment index by 1
     incq %rsi
 
-    # Fetch nth Element into rax
+    # Fetch nth element into rax
     movb (%rbx, %rsi, 1), %dl
 
-    # If nth Element equals 0 (null terminated), then exit loop
+    # If nth element equals 0 (null terminated), then exit loop
     cmpb $0, %dl
     je exit_loop
 
@@ -72,10 +79,13 @@ not_number:
 
 exit_loop:
     # Add end of sequence (LF)
-    movb $10, (%rbx, %rsi, 1)  # Add newline char
-    incq %rsi # rsi 7
-    movb $0, (%rbx, %rsi, 1)   # Append back \0
+    movb $END_LINE_ASCII, (%rbx, %rsi, 1)  # Add newline char
 
+    # Increment index to store 1 extra character
+    incq %rsi
+    movb $NULL_TERMINATE_ASCII, (%rbx, %rsi, 1)   # Append back \0
+
+display:
     movq $SYS_WRITE, %rax
     movq $STDOUT, %rdi
     movq %rsi, %rdx
