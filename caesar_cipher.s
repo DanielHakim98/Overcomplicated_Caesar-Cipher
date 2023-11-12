@@ -20,10 +20,11 @@
 
 
 # ASCII Characters boundary
-.equ LOWERCASE_A, 'a'
-.equ LOWERCASE_Z, 'z'
-.equ UPPERCASE_A, 'A'
-.equ UPPERCASE_Z, 'Z
+.equ UPPERCASE_A, 65
+.equ UPPERCASE_Z, 90
+.equ LOWERCASE_A, 97
+.equ LOWERCASE_Z, 122
+
 
 # string for displaying error
 ERR_NOT_NUM:
@@ -188,12 +189,70 @@ body:
     movq 24(%rbp), %rsi # Second argument: index
     movq 32(%rbp), %rcx # Third argument: shifter
 
-    # Fetch nth element into rax
+    # Fetch nth element into rdx
     movb (%rbx, %rsi, 1), %dl
+
+    # store old value
+    movq %rdx, -8(%rbp)
+
     # add shifter to nth element
     addq %rcx, %rdx
 
+check_wrap:
+    # Update (12/11/23) - Compare characters the best with cmpb
+    # Do not use cmpq to compare whole 64 bit register just to compare
+    # character
+    cmpb $UPPERCASE_A, %dl
+    jl fix_wrapping_less_than_upper_a
+
+    cmpb $UPPERCASE_Z, %dl
+    jle epilogue
+
+    cmpb $LOWERCASE_A, %dl
+    jl less_than_lower_a_or_more_than_upper_z
+
+    cmpb $LOWERCASE_Z, %dl
+    jle epilogue
+
+    jmp fix_wrapping_more_than_lower_z
+
+
+fix_wrapping_less_than_upper_a:
+    add $26, %dl
+    cmpb $UPPERCASE_A, %dl
+    jl fix_wrapping_less_than_upper_a
+    jmp epilogue
+
+less_than_lower_a_or_more_than_upper_z:
+    # check old value before shifted if it's less than Z or more
+    pushq %rdx
+    movq -8(%rbp), %rdx
+    cmpb $UPPERCASE_Z, %dl
+    popq %rdx
+    jle fix_wrapping_more_than_upper_z  # Jump if less than or equal to UPPERCASE_Z
+    jmp fix_wrapping_less_than_lower_a
+
+fix_wrapping_more_than_upper_z:
+    subq $26, %rdx
+    cmpb $UPPERCASE_Z, %dl
+    jg fix_wrapping_more_than_upper_z
+    jmp epilogue
+
+fix_wrapping_less_than_lower_a:
+    addb $26, %dl
+    cmpb $LOWERCASE_A, %dl
+    jl fix_wrapping_less_than_lower_a
+    jmp epilogue
+
+
+fix_wrapping_more_than_lower_z:
+    subq $26, %rdx
+    cmpb $LOWERCASE_Z, %dl
+    jg fix_wrapping_more_than_lower_z
+    jmp epilogue
+
 epilogue:
+
     # store back nth element into *[]char
     movb %dl, (%rbx, %rsi, 1)
 
