@@ -27,19 +27,22 @@ mod tests {
 
     #[test]
     fn test_uppercase_a_shift_1(){
-        let cipher_result = run_caesar_cipher("A", 1);
-        let got = cipher_result.trim();
-
-        let expected = "B".to_string();
-        assert_eq!(got, expected);
+        let got = run_caesar_cipher("A", 1);
+        let want = "B".to_string();
+        assert_eq!(got, want);
     }
 
     #[test]
     fn test_hello_world_shift_5() {
-        let cipher_result = run_caesar_cipher("Hello, World!", 5);
-        let got = cipher_result.trim();
+        let got = run_caesar_cipher("Hello, World!", 5);
+        let want = "Mjqqt, Btwqi!".to_string();
+        assert_eq!(got, want);
+    }
 
-        let expected = "Mjqqt, Btwqi!".to_string();
-        assert_eq!(got, expected);
+    #[test]
+    fn test_uppercase_z_shift_1(){
+        let got = run_caesar_cipher("Z", 1);
+        let want = "A".to_string();
+        assert_eq!(got, want);
     }
 }
