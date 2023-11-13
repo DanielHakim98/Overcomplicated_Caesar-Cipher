@@ -45,4 +45,11 @@ mod tests {
         let want = "A".to_string();
         assert_eq!(got, want);
     }
+
+    #[test]
+    fn test_hello_world_shift_75(){
+        let got = run_caesar_cipher("Hello, World!", 75);
+        let want = "Ebiil, Tloia!".to_string();
+        assert_eq!(got, want);
+    }
 }
