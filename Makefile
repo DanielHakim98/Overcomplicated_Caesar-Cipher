@@ -24,6 +24,7 @@ $(filename).o: $(aux_file).o $(dependecy_file).s
 
 # Create dependecies first before main file
 $(aux_file).o: $(dependecy_file).s
+	@mkdir -p target/
 	@as $(aux_file).s -o target/$(aux_file).o
 
 # This one to clean up build files
