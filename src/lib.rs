@@ -12,11 +12,11 @@ pub fn run_caesar_cipher(data: &str, shifter: i32) -> String {
         Err(_) => Vec::new(),
     };
 
-     match String::from_utf8(output) {
+    match String::from_utf8(output) {
         Ok(v) => {
-            let cleaned = &v.trim()[1..v.len()-2];
+            let cleaned = &v.trim()[1..v.len() - 2];
             cleaned.to_string()
-        },
+        }
         Err(_) => "".to_string(),
     }
 }
@@ -26,7 +26,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_uppercase_a_shift_1(){
+    fn test_uppercase_a_shift_1() {
         let got = run_caesar_cipher("A", 1);
         let want = "B".to_string();
         assert_eq!(got, want);
@@ -40,14 +40,14 @@ mod tests {
     }
 
     #[test]
-    fn test_uppercase_z_shift_1(){
+    fn test_uppercase_z_shift_1() {
         let got = run_caesar_cipher("Z", 1);
         let want = "A".to_string();
         assert_eq!(got, want);
     }
 
     #[test]
-    fn test_hello_world_shift_75(){
+    fn test_hello_world_shift_75() {
         let got = run_caesar_cipher("Hello, World!", 75);
         let want = "Ebiil, Tloia!".to_string();
         assert_eq!(got, want);
