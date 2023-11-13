@@ -31,3 +31,7 @@ $(aux_file).o: $(dependecy_file).s
 clean:
 	@rm target/$(filename).o target/$(filename)
 	@rm target/$(aux_file).o
+
+# For testing assembly program
+test: target/$(filename)
+	cargo test
