@@ -114,7 +114,7 @@ exit_loop:
     incq %rsi
     movb $NULL_TERMINATE_ASCII, (%rbx, %rsi, 1)   # Append back \0
 
-display:
+display_shifted_string:
     movq $SYS_WRITE, %rax
     movq $STDOUT, %rdi
     movq %rsi, %rdx
