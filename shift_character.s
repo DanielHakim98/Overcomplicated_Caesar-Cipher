@@ -25,6 +25,10 @@ shift_character: # *[]char %rbx, index %rsi, shifter %rcx
         # add shifter to nth element
         addq %rcx, %rdx
 
+        # breakpoint
+        #movq %rdx, %rsi
+        #jmp emergency
+        # end
     check_wrap:
         # Update (12/11/23) - Compare characters the best with cmpb
         # Do not use cmpq to compare whole 64 bit register just to compare
@@ -92,3 +96,8 @@ shift_character: # *[]char %rbx, index %rsi, shifter %rcx
         popq %rbp
         ret
 
+emergency:
+    # Exit status
+    movq %rsi, %rdi
+    movq $SYS_EXIT, %rax
+    syscall

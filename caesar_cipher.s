@@ -13,25 +13,13 @@ _start:
 # into rbx and rdx register
 collect_args:
     movq ARG_1(%rbp), %rbx
-    movq ARG_2(%rbp), %rdx
-
-check_shifter:
-    # Dereference pointer into ascii decimal and then zero extend it
-    movzbq (%rdx), %rcx
-    # Compare the value if 0 ASCII
-    cmpq $ZERO_ASCII, %rcx
-    # If it's less than 0, jump to not_a_number
-    jl not_number
-    # Compare the value with 9 ASCII
-    cmpq $NINE_ASCII, %rcx
-    # If it's greater than 57, jump to not_a_number
-    jg not_number
+    movq ARG_2(%rbp), %rcx
 
 start_loop:
     # Load index 0
     movq $0, %rsi
 
-    # Fetch 1st element into rax
+    # Fetch 1st element into rdx
     movb (%rbx, %rsi, 1), %dl
 
     # If 1st element equals 0, then exit loop
@@ -39,9 +27,16 @@ start_loop:
     je exit_loop
 
     # FUNCTION: Get decimal value from rcx (if 48, then 0, if 49, then 1)
+    pushq %rbx
+    pushq %rsi
+    pushq %rdx
     pushq %rcx
-    call get_decimal_value
+    call atoi
     popq %rcx
+    popq %rdx
+    popq %rsi
+    popq %rbx
+
     movq %rax, %rcx
     # ======= #
 
@@ -68,6 +63,9 @@ is_ascii_alphabet:
     popq %rbx
     popq %rsi
     popq %rcx
+    # breakpoint
+    #movq (%rbx), %rsi
+    #jmp exit
     # ======= #
 
 continue_loop:
@@ -95,16 +93,6 @@ continue_loop:
     # loop again!!
     jmp continue_loop
 
-not_number:
-    # Write *[]char to stdout
-    movq $SYS_WRITE, %rax
-    movq $STDOUT, %rdi
-    movq $ERR_NOT_NUM, %rsi
-    movq $LEN_ERR_NOT_NUM, %rdx
-    syscall
-    # Exit status
-    movq $1, %rsi
-    jmp exit
 
 exit_loop:
     # Add end of sequence (LF)
