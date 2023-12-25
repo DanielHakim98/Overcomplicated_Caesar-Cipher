@@ -33,6 +33,11 @@ shift_character: # *[]char %rbx, index %rsi, shifter %rcx
         # Update (12/11/23) - Compare characters the best with cmpb
         # Do not use cmpq to compare whole 64 bit register just to compare
         # character
+
+        # Update(26/12/23)
+        # - Might need to separate check wrap for Capital shifting and smol shifting
+        # - The way that I would do is to check previous old value in -8(%rbp)
+        #   where it lies, within 65-90 or 97-122
         cmpb $UPPERCASE_A, %dl
         jl fix_wrapping_less_than_upper_a
 
