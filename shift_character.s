@@ -4,99 +4,99 @@
 .globl shift_character
 .type shift_character, @function
 
-shift_character: # *[]char %rbx, index %rsi, shifter %rcx
-    # prologue
-    prologue:
-        pushq %rbp
-        movq %rsp, %rbp
-        subq $8, %rsp      # allocate a local variable
 
-    body:
-        movq 16(%rbp), %rbx # First argument: *[]char
-        movq 24(%rbp), %rsi # Second argument: index
-        movq 32(%rbp), %rcx # Third argument: shifter
+# UPDATE (31/12/23): Solve edge cases when char + shifter reaches 128 (0x80)
+#                    Example, expected H + 56 == L but got P instead.
+#                    because 72 + 56 = 128 or 0x80 which is treated as negative
+#                    if signed instruction is used. So some instruction are changes
+#                    to only work with unsigned such as jl -> jb, jg -> ja and cmpb/cmpq -> cmp
+shift_character:         # *[]char %rbx, index %rsi, shifter %rcx
+    pushq %rbp
+    movq %rsp, %rbp
 
-        # Fetch nth element into rdx
-        movb (%rbx, %rsi, 1), %dl
+    movq 16(%rbp), %rbx # First argument: *[]char
+    movq 24(%rbp), %rsi # Second argument: index
+    movq 32(%rbp), %rcx # Third argument: shifter
 
-        # store old value
-        movq %rdx, -8(%rbp)
+    # Fetch nth element into rdx
+    # ASCII characters at most in 7 bits if I'm not mistaken
+    movl $0, %eax
+    movq (%rbx, %rsi, 1), %rdx
 
-        # add shifter to nth element
+    is_uppercase_or_lowercase:
+        cmpb $UPPERCASE_A, %dl
+        jl not_upper_nor_lower   # if %dl < 65
+
+        cmpb $UPPERCASE_Z, %dl  # if %dl <= 90
+        jle is_upper
+
+        cmpb $LOWERCASE_A, %dl  # if %dl < 97
+        jl not_upper_nor_lower
+
+        cmpb $LOWERCASE_Z, %dl  # if %dl < 122
+        jle is_lower
+
+        # Auto jump to not_upper_nor_lower if %dl > 122
+
+    not_upper_nor_lower:
+        jmp epilogue
+
+    is_upper:
+        addq %rcx, %rdx     # add shifter to nth element
+        jmp check_wrap_upper
+
+    is_lower:
         addq %rcx, %rdx
+        jmp check_wrap_lower
 
-        # breakpoint
-        #movq %rdx, %rsi
-        #jmp emergency
-        # end
-    check_wrap:
-        # Update (12/11/23) - Compare characters the best with cmpb
-        # Do not use cmpq to compare whole 64 bit register just to compare
-        # character
+    check_wrap_upper:
+        cmp $UPPERCASE_A, %dl
+        jb wrap_less_than_upper_a   # shifted char < 65
+        cmp $UPPERCASE_Z, %dl
+        jbe epilogue                # shifted char within 65-90
+        jmp wrap_more_than_upper_z  # shifted char > 90
 
-        # Update(26/12/23)
-        # - Might need to separate check wrap for Capital shifting and smol shifting
-        # - The way that I would do is to check previous old value in -8(%rbp)
-        #   where it lies, within 65-90 or 97-122
-        cmpb $UPPERCASE_A, %dl
-        jl fix_wrapping_less_than_upper_a
+    wrap_less_than_upper_a:
+        # need to reconfirm
+        addq $26, %rdx
+        cmp $UPPERCASE_A, %dl
+        jb wrap_less_than_upper_a   # loop again if shifted char still < 65
+        jmp epilogue                # jmp to end if okay
 
-        cmpb $UPPERCASE_Z, %dl
-        jle epilogue
-
-        cmpb $LOWERCASE_A, %dl
-        jl less_than_lower_a_or_more_than_upper_z
-
-        cmpb $LOWERCASE_Z, %dl
-        jle epilogue
-
-        jmp fix_wrapping_more_than_lower_z
-
-
-    fix_wrapping_less_than_upper_a:
-        add $26, %dl
-        cmpb $UPPERCASE_A, %dl
-        jl fix_wrapping_less_than_upper_a
-        jmp epilogue
-
-    less_than_lower_a_or_more_than_upper_z:
-        # check old value before shifted if it's less than Z or more
-        pushq %rdx
-        movq -8(%rbp), %rdx
-        # This command below won't trigger jump is less (jle)
-        # not sure why. I'm curious why...
-        # cmpq $UPPERCASE_Z, %rdx
-        cmpb $UPPERCASE_Z, %dl
-        popq %rdx
-        jle fix_wrapping_more_than_upper_z  # Jump if less than or equal to UPPERCASE_Z
-        jmp fix_wrapping_less_than_lower_a
-
-    fix_wrapping_more_than_upper_z:
+    wrap_more_than_upper_z:
+        # need to reconfirm
         subq $26, %rdx
-        cmpb $UPPERCASE_Z, %dl
-        jg fix_wrapping_more_than_upper_z
-        jmp epilogue
+        cmp $UPPERCASE_Z, %dl
+        ja wrap_more_than_upper_z       # loop again if shited char > 90
+        jmp epilogue                    # jmp to end if okay
 
-    fix_wrapping_less_than_lower_a:
-        addb $26, %dl
-        cmpb $LOWERCASE_A, %dl
-        jl fix_wrapping_less_than_lower_a
-        jmp epilogue
+    check_wrap_lower:
+        cmp $LOWERCASE_A, %dl
+        jb wrap_less_than_lower_a   # shifted char < 97
+
+        cmp $LOWERCASE_Z, %dl
+        jbe epilogue                # shifted char within 97-122
+
+        jmp wrap_more_than_lower_z  # shifted char > 122
 
 
-    fix_wrapping_more_than_lower_z:
+    wrap_less_than_lower_a:
+        # need to reconfirm
+        addq $26, %rdx
+        cmp $LOWERCASE_A, %dl
+        jb wrap_less_than_lower_a   # loop again if shifted char still < 97
+        jmp epilogue                # jmp to end if okay
+
+    wrap_more_than_lower_z:
+        # need to reconfirm
         subq $26, %rdx
-        cmpb $LOWERCASE_Z, %dl
-        jg fix_wrapping_more_than_lower_z
-        jmp epilogue
+        cmp $LOWERCASE_Z, %dl
+        ja wrap_more_than_lower_z       # loop again if shited char > 122
+        jmp epilogue # jmp to end if okay (%dl <= 122)
 
     epilogue:
-
         # store back nth element into *[]char
         movb %dl, (%rbx, %rsi, 1)
-
-        # epilogue
-        addq $8, %rsp       # deallocate a local variable
         movq %rbp, %rsp
         popq %rbp
         ret

@@ -26,6 +26,7 @@ start_loop:
     cmpb $0, %dl
     je exit_loop
 
+
     # FUNCTION: Get decimal value from rcx (if 48, then 0, if 49, then 1)
     pushq %rbx
     pushq %rsi
@@ -40,20 +41,6 @@ start_loop:
     movq %rax, %rcx
     # ======= #
 
-    # Check if %dl is an ASCII character (a-zA-Z)
-    cmpb $UPPERCASE_A, %dl      # Compare with 'A'
-    jl not_ascii_alphabet
-    cmpb $UPPERCASE_Z, %dl      # Compare with 'Z'
-    jle is_ascii_alphabet
-
-    cmpb $LOWERCASE_A, %dl      # Compare with 'a'
-    jl not_ascii_alphabet
-    cmpb $LOWERCASE_Z, %dl      # Compare with 'z'
-    jle is_ascii_alphabet
-
-not_ascii_alphabet:
-    jmp continue_loop
-
 is_ascii_alphabet:
     # FUNCTION: Add shifter to original
     pushq %rcx
@@ -63,10 +50,8 @@ is_ascii_alphabet:
     popq %rbx
     popq %rsi
     popq %rcx
-    # breakpoint
-    #movq (%rbx), %rsi
-    #jmp exit
     # ======= #
+
 
 continue_loop:
     # Increment index by 1
@@ -79,19 +64,8 @@ continue_loop:
     cmpb $0, %dl
     je exit_loop
 
-    # Check if %dl is an ASCII character (a-zA-Z)
-    cmpb $UPPERCASE_A, %dl      # Compare with 'A'
-    jl not_ascii_alphabet
-    cmpb $UPPERCASE_Z, %dl      # Compare with 'Z'
-    jle is_ascii_alphabet
-
-    cmpb $LOWERCASE_A, %dl      # Compare with 'a'
-    jl not_ascii_alphabet
-    cmpb $LOWERCASE_Z, %dl      # Compare with 'z'
-    jle is_ascii_alphabet
-
-    # loop again!!
-    jmp continue_loop
+    # shift character and loop again!!
+    jmp is_ascii_alphabet
 
 
 exit_loop:
