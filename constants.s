@@ -24,6 +24,7 @@
 .equ LOWERCASE_A, 97
 .equ LOWERCASE_Z, 122
 
+.equ HYPHEN_MINUS, 45
 
 # string for displaying error
 ERR_NOT_NUM:

@@ -26,7 +26,11 @@ start_loop:
     cmpb $0, %dl
     je exit_loop
 
+    # move signess (positive or negative) to rax
+    movb (%rcx, %rsi, 1), %al
 
+    # save previous rax value before func call
+    pushq %rax
     # FUNCTION: Get decimal value from rcx (if 48, then 0, if 49, then 1)
     pushq %rbx
     pushq %rsi
@@ -37,12 +41,16 @@ start_loop:
     popq %rdx
     popq %rsi
     popq %rbx
-
+    # move return value from rax into rcx (shifter)
     movq %rax, %rcx
     # ======= #
 
+    # get back previous saved rax value after func all
+    popq %rax
+
 is_ascii_alphabet:
     # FUNCTION: Add shifter to original
+    pushq %rax
     pushq %rcx
     pushq %rsi
     pushq %rbx
@@ -50,7 +58,9 @@ is_ascii_alphabet:
     popq %rbx
     popq %rsi
     popq %rcx
+    popq %rax
     # ======= #
+
 
 
 continue_loop:

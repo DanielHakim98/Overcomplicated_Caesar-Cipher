@@ -15,6 +15,10 @@ atoi:
         movq $0, %rsi
         movq (%rbx, %rsi, 1), %rcx
 
+        # If minus sign, then skip
+        cmpb $HYPHEN_MINUS, %cl
+        je is_minus
+
         # Check if current value in rsi is a number
         cmpb $ZERO_ASCII, %cl      # Compare the value if 0 ASCII
         jl not_number              # If it's less than 0, jump to not_a_number
@@ -48,6 +52,11 @@ atoi:
         imulq $10, %rax
         addq %rcx, %rax
 
+        jmp next
+
+    is_minus:
+        xorq %rcx, %rcx
+        xorq %rax, %rax
         jmp next
 
     epilogue:

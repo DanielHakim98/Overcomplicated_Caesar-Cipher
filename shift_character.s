@@ -17,6 +17,8 @@ shift_character:         # *[]char %rbx, index %rsi, shifter %rcx
     movq 16(%rbp), %rbx # First argument: *[]char
     movq 24(%rbp), %rsi # Second argument: index
     movq 32(%rbp), %rcx # Third argument: shifter
+    movq 40(%rbp), %rdi # Foruth argument: signess (- or ascii numeric)
+
 
     # Fetch nth element into rdx
     # ASCII characters at most in 7 bits if I'm not mistaken
@@ -42,11 +44,27 @@ shift_character:         # *[]char %rbx, index %rsi, shifter %rcx
         jmp epilogue
 
     is_upper:
-        addq %rcx, %rdx     # add shifter to nth element
+        cmpq $HYPHEN_MINUS, %rdi
+        je is_upper_sub
+
+    is_upper_add:
+        addq %rcx, %rdx         # add shifter to nth element
+        jmp check_wrap_upper
+
+    is_upper_sub:
+        subq %rcx, %rdx         # substract shifter to nth element
         jmp check_wrap_upper
 
     is_lower:
-        addq %rcx, %rdx
+        cmpq $HYPHEN_MINUS, %rdi
+        je is_lower_sub
+
+    is_lower_add:
+        addq %rcx, %rdx         # add shifter to nth element
+        jmp check_wrap_lower
+
+    is_lower_sub:
+        subq %rcx, %rdx         # substract shifter to nth element
         jmp check_wrap_lower
 
     check_wrap_upper:
