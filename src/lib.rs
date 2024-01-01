@@ -52,4 +52,11 @@ mod tests {
         let want = "Ebiil, Tloia!".to_string();
         assert_eq!(got, want);
     }
+
+    #[test]
+    fn test_hello_world_shift_negative_29(){
+        let got = run_caesar_cipher("Hello, World!", -29);
+        let want = "Ebiil, Tloia!".to_string();
+        assert_eq!(got, want)
+    }
 }
